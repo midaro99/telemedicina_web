@@ -11,8 +11,8 @@ class AuthService {
 
   Profile? _profile;
   
-  final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; //servidor
-  //final String _baseUrl = 'http://localhost:8080/api';
+  //final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; //servidor
+  final String _baseUrl = 'http://localhost:8080/api';
 
   // Iniciar sesión 
   Future<bool> login(String usuario, String contrasena) async {

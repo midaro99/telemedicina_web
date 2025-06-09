@@ -274,11 +274,13 @@ class _SearchPageState extends State<SearchPage> {
           ),
           pw.Spacer(),
           pw.Container(
-            width: 200,
-            height: 80,
-            decoration: pw.BoxDecoration(border: pw.Border.all(width: 1)),
-            child: pw.Image(pw.MemoryImage(firma), fit: pw.BoxFit.contain),
+          width: 120,
+          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: pw.Image(
+            pw.MemoryImage(firma),
+            fit: pw.BoxFit.contain,
           ),
+        ),
           pw.SizedBox(height: 4),
           pw.Text(docNombre, style: small),
           pw.Text(
@@ -320,7 +322,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Future<void> _uploadResult() async {
-    if (_pacienteId == null || _pdfGeneradoBytes == null || _resultadoTipo == null) {
+    if (_pdfGeneradoBytes == null || _resultadoTipo == null) {
       _showDialog('Error','Completa todos los campos y genera el PDF antes de subir.');
       return;
     }
@@ -331,7 +333,6 @@ class _SearchPageState extends State<SearchPage> {
     setState(()=>_loadingUpload=true);
     try {
       await ApiService().uploadResultadoMedico(
-        pacienteId: _pacienteId!,
         fileBytes: _pdfGeneradoBytes!,
         fileName: 'resultado_vph_${_ctrl.text.trim()}.pdf',
         dispositivo: '$_selectedPrefix${_ctrl.text.trim()}',

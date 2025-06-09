@@ -151,7 +151,7 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             style: buttonStyle,
             onPressed: () => Navigator.pushNamed(context, '/doctor/search'),
-            child: const Text('Buscar paciente e ingresar resultado'),
+            child: const Text('Ingresar Resultado'),
           ),
           const SizedBox(height: 12),
           ElevatedButton(

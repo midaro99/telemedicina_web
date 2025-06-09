@@ -97,19 +97,74 @@ class _ResultadosVphPageState extends State<ResultadosVphPage> {
   /// Muestra confirmación y, si acepta, vacía los campos en el backend
   Future<void> _confirmarYVaciar(String codigo) async {
     final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Confirmar borrado de campos'),
-        content: const Text(
-          'Se eliminarán solo los campos de contenido, fecha, nombre, tamaño, tipo y diagnóstico. ¿Continuar?',
+    context: context,
+    builder: (_) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: 300,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
-        ],
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF002856),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Confirmar borrado de campos',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context, false),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(color: Color(0xFFA51008), shape: BoxShape.circle),
+                    child: const Icon(Icons.close, color: Colors.white, size: 20),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Se eliminarán solo los campos de contenido, fecha, nombre, tamaño, tipo y diagnóstico. ¿Continuar?',
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: TextButton.styleFrom(foregroundColor: Color(0xFFA51008)),
+                  child: const Text('Cancelar'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFA51008),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            ),
+          ),
+        ]),
       ),
-    );
-
+    ),
+  );
     if (confirmado == true) {
       try {
         await ApiService().clearExamenVphFields(codigo);
@@ -287,16 +342,73 @@ class _ResultadosVphPageState extends State<ResultadosVphPage> {
                               onPressed: (diagnostico != null && diagnostico.trim().isNotEmpty)
                                   ? () async {
                                       final confirmar = await showDialog<bool>(
-                                        context: context,
-                                        builder: (_) => AlertDialog(
-                                          title: const Text('Confirmar edición'),
-                                          content: const Text('¿Deseas vaciar los campos y editar este resultado?'),
-                                          actions: [
-                                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-                                            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
-                                          ],
+                                      context: context,
+                                      builder: (_) => Dialog(
+                                        backgroundColor: Colors.transparent,
+                                        child: Container(
+                                          width: 300,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                            // Encabezado
+                                            Container(
+                                              decoration: const BoxDecoration(
+                                                color: Color(0xFF002856),
+                                                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                              child: Row(
+                                                children: [
+                                                  const Expanded(
+                                                    child: Text(
+                                                      'Confirmar edición',
+                                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  GestureDetector(
+                                                    onTap: () => Navigator.pop(context, false),
+                                                    child: Container(
+                                                      width: 32,
+                                                      height: 32,
+                                                      decoration: const BoxDecoration(color: Color(0xFFA51008), shape: BoxShape.circle),
+                                                      child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.all(16),
+                                              child: Text('¿Deseas vaciar los campos y editar este resultado?'),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, false),
+                                                    style: TextButton.styleFrom(foregroundColor: Color(0xFFA51008)),
+                                                    child: const Text('Cancelar'),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  ElevatedButton(
+                                                    onPressed: () => Navigator.pop(context, true),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Color(0xFFA51008),
+                                                      foregroundColor: Colors.white,
+                                                    ),
+                                                    child: const Text('Confirmar'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ]),
                                         ),
-                                      );
+                                      ),
+                                    );
                                       if (confirmar == true) {
                                         _vaciarYCrear(codigo);
                                       }
