@@ -7,9 +7,8 @@ import 'package:telemedicina_web/models/profile.dart';
 import 'package:telemedicina_web/models/paciente.dart';
 
 class ApiService {
-final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
-//final String _baseUrl = 'http://localhost:8080/api';
-
+  final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
+  //final String _baseUrl = 'http://localhost:8080/api';
 
   Future<List<Result>> getResults(String patientId) async {
     final response = await http.get(
@@ -18,12 +17,14 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
     );
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Result.fromJson(json as Map<String, dynamic>)).toList();
+      return data
+          .map((json) => Result.fromJson(json as Map<String, dynamic>))
+          .toList();
     }
     throw Exception('Error al cargar resultados: ${response.statusCode}');
   }
 
-  Future<void> uploadResult( 
+  Future<void> uploadResult(
     String patientId,
     List<int> fileBytes,
     String filename,
@@ -78,27 +79,86 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
     final json = jsonDecode(resp.body) as Map<String, dynamic>;
     return Paciente.fromJson(json);
   }
+
+  // Obtiene el UUID del paciente-----------
+  Future<String> fetchPublicIdFromInternalId(String idInterno) async {
+    final uri = Uri.parse(
+      '${_baseUrl.replaceFirst('/api', '/usuarios')}/public-indent/$idInterno',
+    );
+    final resp = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (resp.statusCode == 200) {
+      return resp.body.replaceAll(
+        '"',
+        '',
+      ); // para limpiar las comillas del UUID si vienen en JSON plano
+    } else {
+      throw Exception('r publicId, cod: ${resp.statusCode}');
+    }
+  }
+
+  //Método par mandar la notificiación al paciente ----------------------------
+  Future<void> enviarNotificacionPuntual({
+    required String cuentaUsuarioPublicId,
+    required String titulo,
+    required String mensaje,
+    required String tipoAccion,
+    required String accionUrl,
+  }) async {
+    final uri = Uri.parse(
+      '${_baseUrl.replaceFirst('/api', '')}/notificaciones',
+    );
+    final token = html.window.localStorage['jwt'];
+
+    final headers = {
+      'Content-Type': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final body = jsonEncode({
+      'cuentaUsuarioPublicId': cuentaUsuarioPublicId,
+      'tipoNotificacion': 'RESULTADO',
+      'titulo': titulo,
+      'mensaje': mensaje,
+      'tipoAccion': tipoAccion,
+      'accion': accionUrl,
+    });
+
+    final response = await http.post(uri, headers: headers, body: body);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(
+        'Error al enviar notificación: ${response.statusCode} - ${response.body}',
+      );
+    }
+  }
+
   // Subir resultado en PDF
   Future<void> uploadResultadoMedico({
-  required List<int> fileBytes,
-  required String fileName,
-  required String dispositivo,
-  required String diagnostico,
-  required List<String> genotipos,
-}) async {
-  final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/subir');
-  //final uri = Uri.parse('http://localhost:8080/prueba/medico/subir');
-    final request = http.MultipartRequest('POST', uri)
-      ..files.add(http.MultipartFile.fromBytes(
-        'file',
-        fileBytes,
-        filename: fileName,
-        contentType: MediaType('application', 'pdf'),
-      ))
-      ..fields['nombre'] = fileName
-      ..fields['dispositivo'] = dispositivo
-      ..fields['diagnostico'] = diagnostico
-      ..fields['genotipos'] = jsonEncode(genotipos);
+    required List<int> fileBytes,
+    required String fileName,
+    required String dispositivo,
+    required String diagnostico,
+    required List<String> genotipos,
+  }) async {
+    final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/subir');
+    final request =
+        http.MultipartRequest('POST', uri)
+          ..files.add(
+            http.MultipartFile.fromBytes(
+              'file',
+              fileBytes,
+              filename: fileName,
+              contentType: MediaType('application', 'pdf'),
+            ),
+          )
+          ..fields['nombre'] = fileName
+          ..fields['dispositivo'] = dispositivo
+          ..fields['diagnostico'] = diagnostico
+          ..fields['genotipos'] = jsonEncode(genotipos);
 
     final token = html.window.localStorage['jwt'];
     if (token != null && token.isNotEmpty) {
@@ -108,33 +168,36 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
     final response = await request.send();
     if (response.statusCode != 200) {
       final body = await response.stream.bytesToString();
-      throw Exception('Error al subir resultado: ${response.statusCode} - $body');
+      throw Exception(
+        'Error al subir resultado: ${response.statusCode} - $body',
+      );
     }
   }
 
+
   /// Nuevo método para obtener datos del médico por ID
   Future<Map<String, dynamic>> fetchMedicoById(int id) async {
-  final resp = await http.get(
-    Uri.parse('$_baseUrl/medicos/$id'),
-    headers: {'Content-Type': 'application/json'},
-  );
-  if (resp.statusCode == 200) {
-    final data = jsonDecode(resp.body) as Map<String, dynamic>;
-    return data;
+    final resp = await http.get(
+      Uri.parse('$_baseUrl/medicos/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (resp.statusCode == 200) {
+      final data = jsonDecode(resp.body) as Map<String, dynamic>;
+      return data;
+    }
+    throw Exception('Error al obtener médico: ${resp.statusCode}');
   }
-  throw Exception('Error al obtener médico: ${resp.statusCode}');
-}
 
-
-  /// Método corregido para guardar código QR 
+  /// Método corregido para guardar código QR
   Future<void> guardarQRConInfo({
     required String codigo,
     required String fechaExpiracion,
   }) async {
     final uri = Uri.parse('$_baseUrl/codigosqr');
-    final request = http.MultipartRequest('POST', uri)
-      ..fields['codigo'] = codigo
-      ..fields['fechaExpiracion'] = fechaExpiracion;
+    final request =
+        http.MultipartRequest('POST', uri)
+          ..fields['codigo'] = codigo
+          ..fields['fechaExpiracion'] = fechaExpiracion;
 
     final token = html.window.localStorage['jwt'];
     if (token != null && token.isNotEmpty) {
@@ -144,7 +207,9 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
     final response = await request.send();
     if (response.statusCode != 200 && response.statusCode != 201) {
       final body = await response.stream.bytesToString();
-      throw Exception('Error al guardar código QR: ${response.statusCode} - $body');
+      throw Exception(
+        'Error al guardar código QR: ${response.statusCode} - $body',
+      );
     }
   }
 
@@ -201,7 +266,11 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
 
   /// Consulta sólo el nombre del paciente a partir del código de dispositivo
   Future<String> fetchPatientNameFromExamenVph(String dispositivoCodigo) async {
-    //final uri = Uri.parse('http://localhost:8080/prueba/medico/nombre/$dispositivoCodigo');
+    /*
+    final uri = Uri.parse(
+      'http://localhost:8080/prueba/medico/nombre/$dispositivoCodigo',
+    );
+    */
     final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/nombre/$dispositivoCodigo');
     final resp = await http.get(uri);
     if (resp.statusCode == 200) {
@@ -212,7 +281,11 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
 
   /// Borra SOLO los campos de contenido, fecha_resultado, nombre, tamano, tipo y diagnostico
   Future<void> clearExamenVphFields(String codigo) async {
-    //final uri = Uri.parse('http://localhost:8080/prueba/medico/clear-fields/$codigo');
+    /*
+    final uri = Uri.parse(
+      'http://localhost:8080/prueba/medico/clear-fields/$codigo',
+    );
+    */
     final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/clear-fields/$codigo');
     final token = html.window.localStorage['jwt'];
     final headers = <String, String>{
@@ -225,7 +298,8 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
         'Error al vaciar campos: ${response.statusCode} - ${response.body}',
       );
     }
-  }  
+  }
+
   /// Devuelve la lista de prefijos de dispositivo desde el backend.
   Future<List<String>> fetchDevicePrefixes() async {
     //final uri = Uri.parse('http://localhost:8080/prueba/medico/prefixes');
@@ -242,9 +316,8 @@ final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
       return decoded.map((e) => e.toString()).toList();
     } else {
       throw Exception(
-        'Error al cargar prefijos (${response.statusCode}): ${response.body}'
+        'Error al cargar prefijos (${response.statusCode}): ${response.body}',
       );
     }
   }
-
 }

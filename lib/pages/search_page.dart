@@ -44,10 +44,26 @@ class _SearchPageState extends State<SearchPage> {
 
   final Map<String, List<String>> _genotipos = {
     'alto': [
-      '16','18','31','33','35','39','45','51','52','56','58',
-      '59','68','26','53','66','73','82'
+      '16',
+      '18',
+      '31',
+      '33',
+      '35',
+      '39',
+      '45',
+      '51',
+      '52',
+      '56',
+      '58',
+      '59',
+      '68',
+      '26',
+      '53',
+      '66',
+      '73',
+      '82',
     ],
-    'bajo': ['6','11','42','43','44','81'],
+    'bajo': ['6', '11', '42', '43', '44', '81'],
   };
 
   pw.Font? _loraFont;
@@ -150,22 +166,27 @@ class _SearchPageState extends State<SearchPage> {
     if (_pacienteNombre == null ||
         _pacienteId == null ||
         _resultadoTipo == null) {
-      _showDialog('Error',
-          'Debe buscar y seleccionar un paciente y diagnóstico antes.');
+      _showDialog(
+        'Error',
+        'Debe buscar y seleccionar un paciente y diagnóstico antes.',
+      );
       return;
     }
     if (_loraFont == null) {
       _showDialog(
-          'Error', 'La fuente aún no se ha cargado, por favor intenta de nuevo.');
+        'Error',
+        'La fuente aún no se ha cargado, por favor intenta de nuevo.',
+      );
       return;
     }
 
     final docData = await ApiService().fetchMedicoById(1);
     final docNombre = docData['nombre'] as String;
     final rawEspecializacion = docData['especializacion'];
-    final docEspecializacion = rawEspecializacion != null
-    ? utf8.decode(latin1.encode(rawEspecializacion))
-    : '';
+    final docEspecializacion =
+        rawEspecializacion != null
+            ? utf8.decode(latin1.encode(rawEspecializacion))
+            : '';
 
     final docNRegistro = docData['nregistro'] as String? ?? '';
 
@@ -185,9 +206,10 @@ class _SearchPageState extends State<SearchPage> {
 
     final interpretacion = _getInterpretacion();
 
-    final logo1 = (await rootBundle.load('assets/images/logoucuenca.png'))
-        .buffer
-        .asUint8List();
+    final logo1 =
+        (await rootBundle.load(
+          'assets/images/logoucuenca.png',
+        )).buffer.asUint8List();
     final logo2 =
         (await rootBundle.load('assets/images/clias.png')).buffer.asUint8List();
     final logo3 =
@@ -199,101 +221,134 @@ class _SearchPageState extends State<SearchPage> {
 
     final pdf = pw.Document();
     final base = pw.TextStyle(font: _loraFont, fontSize: 14);
-    final small =
-        pw.TextStyle(font: _loraFont, fontSize: 10);
-    final smallBold =
-        pw.TextStyle(font: _loraFont, fontSize: 10, fontWeight: pw.FontWeight.bold);
+    final small = pw.TextStyle(font: _loraFont, fontSize: 10);
+    final smallBold = pw.TextStyle(
+      font: _loraFont,
+      fontSize: 10,
+      fontWeight: pw.FontWeight.bold,
+    );
     final interpretStyle = pw.TextStyle(font: _loraFont, fontSize: 12);
-    final bold =
-        pw.TextStyle(font: _loraFont, fontSize: 14, fontWeight: pw.FontWeight.bold);
+    final bold = pw.TextStyle(
+      font: _loraFont,
+      fontSize: 14,
+      fontWeight: pw.FontWeight.bold,
+    );
 
-    pdf.addPage(pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(32),
-      build: (c) => pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Row(children: [
-                pw.Image(pw.MemoryImage(logo1), width: 60),
-                pw.SizedBox(width: 8),
-                pw.Image(pw.MemoryImage(logo2), width: 60),
-                pw.SizedBox(width: 8),
-                pw.Image(pw.MemoryImage(logo3), width: 60),
-                pw.SizedBox(width: 8),
-                pw.Image(pw.MemoryImage(logo4), width: 60),
-              ]),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  pw.Text('Fecha de ingreso:', style: small),
-                  pw.Text(fecha, style: smallBold),
-                  pw.SizedBox(height: 4),
-                  pw.Text('Página 1', style: small),
-                ],
-              ),
-            ],
-          ),
-          pw.SizedBox(height: 20),
-          pw.Center(
-            child: pw.Text(
-              'ANÁLISIS MOLECULAR DEL VIRUS DE PAPILOMA HUMANO (VPH)',
-              style: base.copyWith(fontSize: 24, fontWeight: pw.FontWeight.bold),
-              textAlign: pw.TextAlign.center,
-            ),
-          ),
-          pw.SizedBox(height: 16),
-          pw.Text(
-            'Mediante el uso de la Reacción en Cadena de la Polimerasa en tiempo real (qPCR) para la amplificación del virus del VPH obtenido en muestras, se llevó a cabo la genotipificación del VPH utilizando el kit Jiangsu Mole Bioscience MOSPIRE.',
-            style: small,
-            textAlign: pw.TextAlign.justify,
-          ),
-          pw.SizedBox(height: 24),
-          pw.Table(
-            border: pw.TableBorder.all(color: PdfColors.grey),
-            columnWidths: {0: const pw.FixedColumnWidth(150), 1: const pw.FlexColumnWidth()},
-            children: [
-              _row('Código Dispositivo', '$_selectedPrefix${_ctrl.text.trim()}', base, bold),
-              _row('Paciente', _pacienteNombre!, base, bold),
-              _row('Diagnóstico', textoDiag, base, bold),
-              if (_genotiposSeleccionados.isNotEmpty)
-                _row('Genotipos detectados', _genotiposSeleccionados.join(', '), base, bold),
-            ],
-          ),
-          pw.SizedBox(height: 16),
-          pw.RichText(
-            text: pw.TextSpan(
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build:
+            (c) => pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.TextSpan(text: 'Interpretación:\n', style: bold),
-                pw.TextSpan(text: interpretacion, style: interpretStyle),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Row(
+                      children: [
+                        pw.Image(pw.MemoryImage(logo1), width: 60),
+                        pw.SizedBox(width: 8),
+                        pw.Image(pw.MemoryImage(logo2), width: 60),
+                        pw.SizedBox(width: 8),
+                        pw.Image(pw.MemoryImage(logo3), width: 60),
+                        pw.SizedBox(width: 8),
+                        pw.Image(pw.MemoryImage(logo4), width: 60),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text('Fecha de ingreso:', style: small),
+                        pw.Text(fecha, style: smallBold),
+                        pw.SizedBox(height: 4),
+                        pw.Text('Página 1', style: small),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+                pw.Center(
+                  child: pw.Text(
+                    'ANÁLISIS MOLECULAR DEL VIRUS DE PAPILOMA HUMANO (VPH)',
+                    style: base.copyWith(
+                      fontSize: 24,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ),
+                pw.SizedBox(height: 16),
+                pw.Text(
+                  'Mediante el uso de la Reacción en Cadena de la Polimerasa en tiempo real (qPCR) para la amplificación del virus del VPH obtenido en muestras, se llevó a cabo la genotipificación del VPH utilizando el kit Jiangsu Mole Bioscience MOSPIRE.',
+                  style: small,
+                  textAlign: pw.TextAlign.justify,
+                ),
+                pw.SizedBox(height: 24),
+                pw.Table(
+                  border: pw.TableBorder.all(color: PdfColors.grey),
+                  columnWidths: {
+                    0: const pw.FixedColumnWidth(150),
+                    1: const pw.FlexColumnWidth(),
+                  },
+                  children: [
+                    _row(
+                      'Código Dispositivo',
+                      '$_selectedPrefix${_ctrl.text.trim()}',
+                      base,
+                      bold,
+                    ),
+                    _row('Paciente', _pacienteNombre!, base, bold),
+                    _row('Diagnóstico', textoDiag, base, bold),
+                    if (_genotiposSeleccionados.isNotEmpty)
+                      _row(
+                        'Genotipos detectados',
+                        _genotiposSeleccionados.join(', '),
+                        base,
+                        bold,
+                      ),
+                  ],
+                ),
+                pw.SizedBox(height: 16),
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(text: 'Interpretación:\n', style: bold),
+                      pw.TextSpan(text: interpretacion, style: interpretStyle),
+                    ],
+                  ),
+                  textAlign: pw.TextAlign.justify,
+                ),
+                pw.Spacer(),
+                pw.Container(
+                  width: 120,
+                  padding: const pw.EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 4,
+                  ),
+                  child: pw.Image(
+                    pw.MemoryImage(firma),
+                    fit: pw.BoxFit.contain,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(docNombre, style: small),
+                pw.Text(
+                  docEspecializacion.isNotEmpty
+                      ? docEspecializacion
+                      : 'Especialización no disponible',
+                  style: small,
+                ),
+                pw.Text(
+                  docNRegistro.isNotEmpty
+                      ? docNRegistro
+                      : 'N° registro no disponible',
+                  style: smallBold,
+                ),
               ],
             ),
-            textAlign: pw.TextAlign.justify,
-          ),
-          pw.Spacer(),
-          pw.Container(
-          width: 120,
-          padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: pw.Image(
-            pw.MemoryImage(firma),
-            fit: pw.BoxFit.contain,
-          ),
-        ),
-          pw.SizedBox(height: 4),
-          pw.Text(docNombre, style: small),
-          pw.Text(
-            docEspecializacion.isNotEmpty ? docEspecializacion : 'Especialización no disponible',
-            style: small,
-          ),
-          pw.Text(
-            docNRegistro.isNotEmpty ? docNRegistro : 'N° registro no disponible',
-            style: smallBold,
-          ),
-        ],
       ),
-    ));
+    );
 
     final bytes = await pdf.save();
     if (_pdfUrl != null) html.Url.revokeObjectUrl(_pdfUrl!);
@@ -311,10 +366,11 @@ class _SearchPageState extends State<SearchPage> {
   void _downloadPdf(Uint8List data, String name) {
     final blob = html.Blob([data], 'application/pdf');
     final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.document.createElement('a') as html.AnchorElement
-      ..href = url
-      ..download = name
-      ..style.display = 'none';
+    final anchor =
+        html.document.createElement('a') as html.AnchorElement
+          ..href = url
+          ..download = name
+          ..style.display = 'none';
     html.document.body!.append(anchor);
     anchor.click();
     anchor.remove();
@@ -323,14 +379,18 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> _uploadResult() async {
     if (_pdfGeneradoBytes == null || _resultadoTipo == null) {
-      _showDialog('Error','Completa todos los campos y genera el PDF antes de subir.');
+      _showDialog(
+        'Error',
+        'Completa todos los campos y genera el PDF antes de subir.',
+      );
       return;
     }
-    if ((_resultadoTipo=='alto'||_resultadoTipo=='bajo') && _genotiposSeleccionados.isEmpty) {
-      _showDialog('Error','Selecciona al menos un genotipo detectado');
+    if ((_resultadoTipo == 'alto' || _resultadoTipo == 'bajo') &&
+        _genotiposSeleccionados.isEmpty) {
+      _showDialog('Error', 'Selecciona al menos un genotipo detectado');
       return;
     }
-    setState(()=>_loadingUpload=true);
+    setState(() => _loadingUpload = true);
     try {
       await ApiService().uploadResultadoMedico(
         fileBytes: _pdfGeneradoBytes!,
@@ -339,37 +399,84 @@ class _SearchPageState extends State<SearchPage> {
         diagnostico: _resultadoTipo!,
         genotipos: _genotiposSeleccionados,
       );
-      _showDialog('Éxito','Resultado subido correctamente');
-      setState((){
+
+      /*
+      //Obtener el UUID del paciente justo antes de enviar la notificación
+      try {
+        final publicId = await ApiService().fetchPublicIdFromInternalId(
+          _pacienteId!,
+        );
+        print('📌 Public ID del paciente: $publicId'); // 👈 Esto lo verás en la consola del navegador
+
+        await ApiService().enviarNotificacionPuntual(
+          cuentaUsuarioPublicId: publicId,
+          titulo: '¡Tus resultados ya están listos!**',
+          mensaje:
+              'Si tu ficha socioeconómica ya está ingresada, puedes ver el resultado ahora.',
+          tipoAccion: 'VER_RESULTADOS',
+          accionUrl: 'https://miapp.com/video-tutorial',
+        );
+
+        _showDialog('Éxito', 'Resultado subido y notificación enviada.');
+      } catch (notiError) {
+        _showDialog(
+          'Advertencia',
+          'Resultado subido, pero la notificación falló.\nDetalles: $notiError',
+        );
+      }
+      */
+      _showDialog('Éxito', 'Resultado subido correctamente');
+      setState(() {
         _pdfGeneradoBytes = null;
-        _pdfUrl           = null;
-        _resultadoTipo    = null;
+        _pdfUrl = null;
+        _resultadoTipo = null;
         _genotiposSeleccionados = [];
       });
-    } catch(e) {
-      _showDialog('Error','Error al subir: $e');
+    } catch (e) {
+      _showDialog('Error', 'Error al subir: $e');
     } finally {
-      setState(()=>_loadingUpload=false);
+      setState(() => _loadingUpload = false);
     }
   }
 
   void _showDialog(String title, String content) {
-    showDialog(context:context, builder:(_)=>
-      AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(title, style: const TextStyle(color: Colors.black87)),
-        content: Text(content, style: const TextStyle(color: Colors.black87)),
-        actions:[ TextButton(onPressed:()=>Navigator.pop(context), child:const Text('OK')) ],
-      )
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: Text(title, style: const TextStyle(color: Colors.black87)),
+            content: Text(
+              content,
+              style: const TextStyle(color: Colors.black87),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
     );
   }
 
   pw.TableRow _row(String a, String b, pw.TextStyle base, pw.TextStyle bold) {
-    return pw.TableRow(children:[
-      pw.Container(padding:const pw.EdgeInsets.all(8), color:PdfColors.grey300, child:pw.Text(a, style:bold)),
-      pw.Padding(padding:const pw.EdgeInsets.all(8), child:pw.Text(b, style:base)),
-    ]);
+    return pw.TableRow(
+      children: [
+        pw.Container(
+          padding: const pw.EdgeInsets.all(8),
+          color: PdfColors.grey300,
+          child: pw.Text(a, style: bold),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(b, style: base),
+        ),
+      ],
+    );
   }
 
   @override
@@ -386,11 +493,14 @@ class _SearchPageState extends State<SearchPage> {
             shape: const CircleBorder(),
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: ()=> Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ),
         ),
-        title: const Text('Buscar Paciente y Subir Resultado', style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: const Text(
+          'Buscar Paciente y Subir Resultado',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
       ),
       body: Align(
         alignment: Alignment.topCenter,
@@ -399,7 +509,9 @@ class _SearchPageState extends State<SearchPage> {
           child: Card(
             color: Colors.white,
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -409,26 +521,40 @@ class _SearchPageState extends State<SearchPage> {
                   if (_loadingPrefixes)
                     const Center(child: CircularProgressIndicator())
                   else if (_prefixes.isEmpty)
-                    const Text('No hay prefijos disponibles', style: TextStyle(color: Colors.red))
+                    const Text(
+                      'No hay prefijos disponibles',
+                      style: TextStyle(color: Colors.red),
+                    )
                   else
                     Row(
                       children: [
                         DropdownButton<String>(
-                        value: _selectedPrefix,
-                        dropdownColor: Colors.white,              // fondo del menú
-                        style: const TextStyle(color: Colors.black),  // texto negro
-                        underline: Container(                       // línea bajo el control
-                          height: 1,
-                          color: Colors.black54,
+                          value: _selectedPrefix,
+                          dropdownColor: Colors.white, // fondo del menú
+                          style: const TextStyle(
+                            color: Colors.black,
+                          ), // texto negro
+                          underline: Container(
+                            // línea bajo el control
+                            height: 1,
+                            color: Colors.black54,
+                          ),
+                          items:
+                              _prefixes
+                                  .map(
+                                    (p) => DropdownMenuItem(
+                                      value: p,
+                                      child: Text(
+                                        p,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                          onChanged: (v) => setState(() => _selectedPrefix = v),
                         ),
-                        items: _prefixes.map((p) =>
-                          DropdownMenuItem(
-                            value: p,
-                            child: Text(p, style: const TextStyle(color: Colors.black)),
-                          )
-                        ).toList(),
-                        onChanged: (v) => setState(() => _selectedPrefix = v),
-                      ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -454,26 +580,40 @@ class _SearchPageState extends State<SearchPage> {
                       backgroundColor: const Color(0xFFA51008),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: _loadingSearch
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Buscar'),
+                    child:
+                        _loadingSearch
+                            ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text('Buscar'),
                   ),
 
                   if (_error != null) ...[
                     const SizedBox(height: 12),
-                    Text(_error!, style: const TextStyle(color: Colors.redAccent)),
+                    Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
                   ],
 
                   if (_pacienteNombre != null) ...[
                     const SizedBox(height: 24),
-                    Text('Paciente: $_pacienteNombre',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Paciente: $_pacienteNombre',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 16),
 
                     // Selección de resultado
@@ -481,68 +621,91 @@ class _SearchPageState extends State<SearchPage> {
                       value: _resultadoTipo,
                       decoration: const InputDecoration(
                         labelText: 'Resultado',
-                        filled: true, fillColor: Colors.white,
+                        filled: true,
+                        fillColor: Colors.white,
                         border: OutlineInputBorder(),
                       ),
                       dropdownColor: Colors.white,
                       items: const [
-                        DropdownMenuItem(value: 'alto', child: Text('Positivo riesgo intermedio/alto')),
-                        DropdownMenuItem(value: 'bajo', child: Text('Positivo bajo')),
-                        DropdownMenuItem(value: 'negativo', child: Text('Negativo')),
+                        DropdownMenuItem(
+                          value: 'alto',
+                          child: Text('Positivo riesgo intermedio/alto'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'bajo',
+                          child: Text('Positivo bajo'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'negativo',
+                          child: Text('Negativo'),
+                        ),
                       ],
-                      onChanged: (v) => setState(() {
-                        _resultadoTipo = v;
-                        _genotiposSeleccionados.clear();
-                        _pdfGeneradoBytes = null;
-                        if (_pdfUrl != null) {
-                          html.Url.revokeObjectUrl(_pdfUrl!);
-                          _pdfUrl = null;
-                        }
-                      }),
+                      onChanged:
+                          (v) => setState(() {
+                            _resultadoTipo = v;
+                            _genotiposSeleccionados.clear();
+                            _pdfGeneradoBytes = null;
+                            if (_pdfUrl != null) {
+                              html.Url.revokeObjectUrl(_pdfUrl!);
+                              _pdfUrl = null;
+                            }
+                          }),
                     ),
 
                     // Chips de genotipos si aplica
-                    if (_resultadoTipo == 'alto' || _resultadoTipo == 'bajo') ...[
+                    if (_resultadoTipo == 'alto' ||
+                        _resultadoTipo == 'bajo') ...[
                       const SizedBox(height: 16),
                       const Text('Genotipos detectados:'),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 6,
-                        children: _genotipos[_resultadoTipo]!
-                            .map((g) {
+                        children:
+                            _genotipos[_resultadoTipo]!.map((g) {
                               final sel = _genotiposSeleccionados.contains(g);
                               return FilterChip(
-                              label: Text(
-                                g,
-                                style: TextStyle(
-                                  color: sel ? Colors.black : Colors.black,
+                                label: Text(
+                                  g,
+                                  style: TextStyle(
+                                    color: sel ? Colors.black : Colors.black,
+                                  ),
                                 ),
-                              ),
-                              backgroundColor: Colors.white,            // fondo normal
-                              selectedColor: Colors.blue.shade100,      // color al estar seleccionado
-                              side: BorderSide(color: Colors.grey.shade400),
-                              checkmarkColor: Colors.black,
-                              selected: sel,
-                              onSelected: (v) => setState(() {
-                                if (v) _genotiposSeleccionados.add(g);
-                                else   _genotiposSeleccionados.remove(g);
-                                _pdfGeneradoBytes = null;
-                                if (_pdfUrl != null) html.Url.revokeObjectUrl(_pdfUrl!);
-                                _pdfUrl = null;
-                              }),
-                            );
-                            })
-                            .toList(),
+                                backgroundColor: Colors.white, // fondo normal
+                                selectedColor:
+                                    Colors
+                                        .blue
+                                        .shade100, // color al estar seleccionado
+                                side: BorderSide(color: Colors.grey.shade400),
+                                checkmarkColor: Colors.black,
+                                selected: sel,
+                                onSelected:
+                                    (v) => setState(() {
+                                      if (v)
+                                        _genotiposSeleccionados.add(g);
+                                      else
+                                        _genotiposSeleccionados.remove(g);
+                                      _pdfGeneradoBytes = null;
+                                      if (_pdfUrl != null)
+                                        html.Url.revokeObjectUrl(_pdfUrl!);
+                                      _pdfUrl = null;
+                                    }),
+                              );
+                            }).toList(),
                       ),
                     ],
 
                     // Interpretación
                     if (_resultadoTipo != null) ...[
                       const SizedBox(height: 16),
-                      const Text('Interpretación:',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Interpretación:',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
-                      Text(_getInterpretacion(), style: const TextStyle(fontSize: 14)),
+                      Text(
+                        _getInterpretacion(),
+                        style: const TextStyle(fontSize: 14),
+                      ),
                     ],
 
                     const SizedBox(height: 24),
@@ -554,7 +717,9 @@ class _SearchPageState extends State<SearchPage> {
                         backgroundColor: const Color(0xFFA51008),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
 
@@ -566,22 +731,24 @@ class _SearchPageState extends State<SearchPage> {
                               'pdf-preview-${DateTime.now().millisecondsSinceEpoch}';
                           ui.platformViewRegistry.registerViewFactory(
                             viewId,
-                            (int _) => html.IFrameElement()
-                              ..style.border = 'none'
-                              ..style.width = '100%'
-                              ..style.height = '100%'
-                              ..src = _pdfUrl!,
+                            (int _) =>
+                                html.IFrameElement()
+                                  ..style.border = 'none'
+                                  ..style.width = '100%'
+                                  ..style.height = '100%'
+                                  ..src = _pdfUrl!,
                           );
                           showDialog(
                             context: context,
-                            builder: (_) => Dialog(
-                              insetPadding: const EdgeInsets.all(16),
-                              child: SizedBox(
-                                width: 800,
-                                height: 600,
-                                child: HtmlElementView(viewType: viewId),
-                              ),
-                            ),
+                            builder:
+                                (_) => Dialog(
+                                  insetPadding: const EdgeInsets.all(16),
+                                  child: SizedBox(
+                                    width: 800,
+                                    height: 600,
+                                    child: HtmlElementView(viewType: viewId),
+                                  ),
+                                ),
                           );
                         },
                         icon: const Icon(Icons.pageview),
@@ -590,7 +757,9 @@ class _SearchPageState extends State<SearchPage> {
                           backgroundColor: const Color(0xFF002856),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ],
@@ -599,18 +768,24 @@ class _SearchPageState extends State<SearchPage> {
                     ElevatedButton.icon(
                       onPressed: _loadingUpload ? null : _uploadResult,
                       icon: const Icon(Icons.upload_file),
-                      label: _loadingUpload
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Text('Subir Resultado'),
+                      label:
+                          _loadingUpload
+                              ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                              : const Text('Subir Resultado'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFA51008),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ],
