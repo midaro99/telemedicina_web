@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:telemedicina_web/models/profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:telemedicina_web/config/env.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._();
@@ -11,8 +12,7 @@ class AuthService {
 
   Profile? _profile;
   
-  final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; //servidor
-  //final String _baseUrl = 'http://localhost:8080/api';
+  final String _baseUrl = '${AppConfig.baseUrl}/api';
 
   // Iniciar sesión 
   Future<bool> login(String usuario, String contrasena) async {

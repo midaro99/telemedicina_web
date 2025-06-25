@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:telemedicina_web/models/user.dart';
+import 'package:telemedicina_web/config/env.dart';
 
 const Color primaryBlue = Color(0xFF002856);
 const Color dangerRed   = Color(0xFFA51008);
@@ -14,7 +15,8 @@ class UsersPage extends StatefulWidget {
 }
 
 class _UsersPageState extends State<UsersPage> {
-  static const _baseApi = 'https://clias.ucuenca.edu.ec/api';
+  final String _baseApi = '${AppConfig.baseUrl}/api';
+
   late Future<List<User>> _futureUsers;
 
   final _nombreCtrl          = TextEditingController();

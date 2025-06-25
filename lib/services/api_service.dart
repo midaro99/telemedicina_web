@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:html' as html;
+import 'package:universal_html/html.dart' as html;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:telemedicina_web/models/result.dart';
 import 'package:telemedicina_web/models/profile.dart';
 import 'package:telemedicina_web/models/paciente.dart';
+import 'package:telemedicina_web/config/env.dart';
 
 class ApiService {
-  final String _baseUrl = 'https://clias.ucuenca.edu.ec/api'; // servidor
-  //final String _baseUrl = 'http://localhost:8080/api';
+  final String _baseUrl = '${AppConfig.baseUrl}/api';
 
   Future<List<Result>> getResults(String patientId) async {
     final response = await http.get(
@@ -144,7 +144,7 @@ class ApiService {
     required String diagnostico,
     required List<String> genotipos,
   }) async {
-    final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/subir');
+    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/subir');
     final request =
         http.MultipartRequest('POST', uri)
           ..files.add(
@@ -266,12 +266,7 @@ class ApiService {
 
   /// Consulta sólo el nombre del paciente a partir del código de dispositivo
   Future<String> fetchPatientNameFromExamenVph(String dispositivoCodigo) async {
-    /*
-    final uri = Uri.parse(
-      'http://localhost:8080/prueba/medico/nombre/$dispositivoCodigo',
-    );
-    */
-    final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/nombre/$dispositivoCodigo');
+    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/nombre/$dispositivoCodigo');
     final resp = await http.get(uri);
     if (resp.statusCode == 200) {
       return resp.body;
@@ -281,12 +276,7 @@ class ApiService {
 
   /// Borra SOLO los campos de contenido, fecha_resultado, nombre, tamano, tipo y diagnostico
   Future<void> clearExamenVphFields(String codigo) async {
-    /*
-    final uri = Uri.parse(
-      'http://localhost:8080/prueba/medico/clear-fields/$codigo',
-    );
-    */
-    final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/clear-fields/$codigo');
+    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/clear-fields/$codigo');
     final token = html.window.localStorage['jwt'];
     final headers = <String, String>{
       'Content-Type': 'application/json',
@@ -302,8 +292,7 @@ class ApiService {
 
   /// Devuelve la lista de prefijos de dispositivo desde el backend.
   Future<List<String>> fetchDevicePrefixes() async {
-    //final uri = Uri.parse('http://localhost:8080/prueba/medico/prefixes');
-    final uri = Uri.parse('https://clias.ucuenca.edu.ec/prueba/medico/prefixes');
+    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/prefixes');
     final token = html.window.localStorage['jwt'];
     final headers = <String, String>{
       if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
