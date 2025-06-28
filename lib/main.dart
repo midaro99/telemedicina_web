@@ -7,6 +7,7 @@ import 'package:telemedicina_web/pages/device_status_page.dart';
 import 'package:telemedicina_web/pages/search_page.dart';
 import 'package:telemedicina_web/pages/codes_page.dart'; 
 import 'package:telemedicina_web/pages/resultados_vph_page.dart';
+import 'package:telemedicina_web/pages/ubicaciones_admin_page.dart';
 
 void main() {
   runApp(const TelemedicinaWeb());
@@ -33,6 +34,7 @@ class TelemedicinaWeb extends StatelessWidget {
         '/admin/codes':   (_) => const QRGeneratorPage(), 
         '/doctor/search': (_) => const SearchPage(),
         '/doctor/resultados': (_) => const ResultadosVphPage(),
+        '/admin/ubicaciones': (_) => const UbicacionesAdminPage()
       },
     );
   }
