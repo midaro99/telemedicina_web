@@ -197,7 +197,7 @@ class _SearchPageState extends State<SearchPage> {
 
     String textoDiag;
     if (_resultadoTipo == 'alto') {
-      textoDiag = 'Positivo para VPH de riesgo intermedio/alto riesgo';
+      textoDiag = 'Positivo para VPH de intermedio/alto riesgo';
     } else if (_resultadoTipo == 'bajo') {
       textoDiag = 'Positivo para VPH de bajo riesgo';
     } else {
