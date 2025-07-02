@@ -6,7 +6,7 @@ import 'package:telemedicina_web/config/env.dart';
 class UbicacionService {
   static final String baseUrl = '${AppConfig.baseUrl}/api/ubicaciones';
 
-  static Future<List<Ubicacion>> obtenerPorTipo(String tipo) async {
+  static Future<List<Ubicacion>> obtenerPorEstablecimiento(String tipo) async {
     final response = await http.get(
       Uri.parse('$baseUrl?establecimiento=$tipo'),
       headers: {'Accept': 'application/json; charset=utf-8'},
@@ -17,6 +17,41 @@ class UbicacionService {
       return data.map((e) => Ubicacion.fromJson(e)).toList();
     } else {
       throw Exception('Error al cargar ubicaciones');
+    }
+  }
+
+  static Future<void> eliminarUbicacion(String publicId) async {
+    final response = await http.delete(Uri.parse('$baseUrl/$publicId'));
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return; // éxito
+    } else {
+      throw Exception('Error al eliminar: ${response.body}');
+    }
+  }
+
+  static Future<void> actualizarUbicacion(
+    String publicId,
+    Ubicacion ubicacion,
+    String establecimiento,
+  ) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/$publicId'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'nombre': ubicacion.nombre,
+        'direccion': ubicacion.direccion,
+        'telefono': ubicacion.telefono,
+        'horario': ubicacion.horarioAtencion,
+        'sitioWeb': ubicacion.sitioWeb,
+        'latitud': ubicacion.latitud,
+        'longitud': ubicacion.longitud,
+        'establecimiento': establecimiento, // o el enum adecuado
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar');
     }
   }
 }
