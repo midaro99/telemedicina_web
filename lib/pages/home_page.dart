@@ -1,5 +1,3 @@
-// lib/pages/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:telemedicina_web/services/auth_service.dart';
 import 'package:telemedicina_web/models/profile.dart';
@@ -141,6 +139,12 @@ class _HomePageState extends State<HomePage> {
             style: buttonStyle,
             onPressed: () => Navigator.pushNamed(context, '/admin/codes'),
             child: const Text('Generación de Códigos'),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            style: buttonStyle,
+            onPressed: () => Navigator.pushNamed(context, '/admin/ubicaciones'),
+            child: const Text('Localización de Servicios Relacionados'),
           ),
         ],
       );
