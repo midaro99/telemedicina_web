@@ -197,7 +197,7 @@ class _SearchPageState extends State<SearchPage> {
 
     String textoDiag;
     if (_resultadoTipo == 'alto') {
-      textoDiag = 'Positivo para VPH de riesgo intermedio/alto riesgo';
+      textoDiag = 'Positivo para VPH de intermedio/alto riesgo';
     } else if (_resultadoTipo == 'bajo') {
       textoDiag = 'Positivo para VPH de bajo riesgo';
     } else {
@@ -656,42 +656,117 @@ class _SearchPageState extends State<SearchPage> {
                     if (_resultadoTipo == 'alto' ||
                         _resultadoTipo == 'bajo') ...[
                       const SizedBox(height: 16),
-                      const Text('Genotipos detectados:'),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        children:
-                            _genotipos[_resultadoTipo]!.map((g) {
-                              final sel = _genotiposSeleccionados.contains(g);
-                              return FilterChip(
-                                label: Text(
-                                  g,
-                                  style: TextStyle(
-                                    color: sel ? Colors.black : Colors.black,
-                                  ),
-                                ),
-                                backgroundColor: Colors.white, // fondo normal
-                                selectedColor:
-                                    Colors
-                                        .blue
-                                        .shade100, // color al estar seleccionado
-                                side: BorderSide(color: Colors.grey.shade400),
-                                checkmarkColor: Colors.black,
-                                selected: sel,
-                                onSelected:
-                                    (v) => setState(() {
-                                      if (v)
-                                        _genotiposSeleccionados.add(g);
-                                      else
-                                        _genotiposSeleccionados.remove(g);
-                                      _pdfGeneradoBytes = null;
-                                      if (_pdfUrl != null)
-                                        html.Url.revokeObjectUrl(_pdfUrl!);
-                                      _pdfUrl = null;
-                                    }),
-                              );
-                            }).toList(),
-                      ),
+                      // Si es "alto", mostramos los dos grupos de genotipos con sus títulos para un resultado mixto
+                      if (_resultadoTipo == 'alto') ...[
+                        const Text('Genotipos de Alto Riesgo:'),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          children:
+                              _genotipos['alto']!.map((g) {
+                                final sel = _genotiposSeleccionados.contains(g);
+                                return FilterChip(
+                                  label: Text(g),
+                                  selected: sel,
+                                  selectedColor:
+                                      Colors
+                                          .blue
+                                          .shade100, // Color cuando está seleccionado
+                                  backgroundColor: Colors.white, // Fondo
+                                  side: BorderSide(color: Colors.grey.shade400),
+                                  checkmarkColor: Colors.black,
+                                  onSelected:
+                                      (v) => setState(() {
+                                        if (v) {
+                                          _genotiposSeleccionados.add(g);
+                                        } else {
+                                          _genotiposSeleccionados.remove(g);
+                                        }
+                                        _pdfGeneradoBytes = null;
+                                        if (_pdfUrl != null)
+                                          html.Url.revokeObjectUrl(_pdfUrl!);
+                                        _pdfUrl = null;
+                                      }),
+                                );
+                              }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Genotipos de Bajo Riesgo:'),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          children:
+                              _genotipos['bajo']!.map((g) {
+                                final sel = _genotiposSeleccionados.contains(g);
+                                return FilterChip(
+                                  label: Text(g),
+                                  selected: sel,
+                                  selectedColor:
+                                      Colors
+                                          .blue
+                                          .shade100, // Color cuando está seleccionado
+                                  backgroundColor: Colors.white, // Fondo blanco
+                                  side: BorderSide(
+                                    color: Colors.grey.shade400,
+                                  ), // Borde gris
+                                  checkmarkColor:
+                                      Colors
+                                          .black, // Color de la marca de verificación
+                                  onSelected:
+                                      (v) => setState(() {
+                                        if (v) {
+                                          _genotiposSeleccionados.add(g);
+                                        } else {
+                                          _genotiposSeleccionados.remove(g);
+                                        }
+                                        _pdfGeneradoBytes = null;
+                                        if (_pdfUrl != null)
+                                          html.Url.revokeObjectUrl(_pdfUrl!);
+                                        _pdfUrl = null;
+                                      }),
+                                );
+                              }).toList(),
+                        ),
+                      ],
+                      // Si es "bajo", solo mostramos los genotipos bajos
+                      if (_resultadoTipo == 'bajo') ...[
+                        const Text('Genotipos de Bajo Riesgo:'),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          children:
+                              _genotipos['bajo']!.map((g) {
+                                final sel = _genotiposSeleccionados.contains(g);
+                                return FilterChip(
+                                  label: Text(g),
+                                  selected: sel,
+                                  selectedColor:
+                                      Colors
+                                          .blue
+                                          .shade100, // Color cuando está seleccionado
+                                  backgroundColor: Colors.white, // Fondo blanco
+                                  side: BorderSide(
+                                    color: Colors.grey.shade400,
+                                  ), // Borde gris
+                                  checkmarkColor:
+                                      Colors
+                                          .black, // Color de la marca de verificación
+                                  onSelected:
+                                      (v) => setState(() {
+                                        if (v) {
+                                          _genotiposSeleccionados.add(g);
+                                        } else {
+                                          _genotiposSeleccionados.remove(g);
+                                        }
+                                        _pdfGeneradoBytes = null;
+                                        if (_pdfUrl != null)
+                                          html.Url.revokeObjectUrl(_pdfUrl!);
+                                        _pdfUrl = null;
+                                      }),
+                                );
+                              }).toList(),
+                        ),
+                      ],
                     ],
 
                     // Interpretación
