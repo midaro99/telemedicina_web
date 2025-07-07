@@ -20,6 +20,30 @@ class UbicacionService {
     }
   }
 
+  static Future<void> crearUbicacion(
+    Ubicacion ubicacion,
+    String establecimiento,
+  ) async {
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'nombre': ubicacion.nombre,
+        'direccion': ubicacion.direccion,
+        'telefono': ubicacion.telefono,
+        'horario': ubicacion.horarioAtencion,
+        'sitioWeb': ubicacion.sitioWeb,
+        'latitud': ubicacion.latitud,
+        'longitud': ubicacion.longitud,
+        'establecimiento': establecimiento,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Error al crear: ${response.body}');
+    }
+  }
+
   static Future<void> eliminarUbicacion(String publicId) async {
     final response = await http.delete(Uri.parse('$baseUrl/$publicId'));
 
@@ -52,6 +76,34 @@ class UbicacionService {
 
     if (response.statusCode != 200) {
       throw Exception('Error al actualizar');
+    }
+  }
+
+  static Future<void> crearUbicacionesLote(List<Ubicacion> lista) async {
+    final body =
+        lista
+            .map(
+              (u) => {
+                'nombre': u.nombre,
+                'direccion': u.direccion,
+                'telefono': u.telefono,
+                'horario': u.horarioAtencion,
+                'sitioWeb': u.sitioWeb,
+                'latitud': u.latitud,
+                'longitud': u.longitud,
+                'establecimiento': u.establecimiento,
+              },
+            )
+            .toList();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/lote'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al cargar ubicaciones en lote');
     }
   }
 }
