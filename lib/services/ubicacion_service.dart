@@ -44,8 +44,10 @@ class UbicacionService {
         final decoded = utf8.decode(response.bodyBytes); 
         final error = jsonDecode(decoded);
         throw Exception(error['mensaje'] ?? 'Error desconocido');
-      } catch (_) {
+      } on FormatException catch (_) {
         throw Exception('Ya existe una ubicación ahí mismo o cercana (10m) en ese punto de coordenadas.');
+      } catch (e) {
+        rethrow; // Preserve unexpected exceptions
       }
     }
   }
