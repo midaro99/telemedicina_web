@@ -141,7 +141,7 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
                       Navigator.pop(context, false);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Error al crear: ${e.toString()}'),
+                          content: Text('Error: ${e.toString()}'),
                         ),
                       );
                     }
@@ -407,27 +407,35 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
       }
 
       try {
-        await UbicacionService.crearUbicacionesLote(ubicacionesValidas);
+        final resultado = await UbicacionService.crearUbicacionesLote(ubicacionesValidas);
         await _cargarDatos();
-        final nombres = ubicacionesValidas.map((u) => '• ${u.nombre}').join('\n');
+
+        final List<dynamic> creadas = resultado['creadas'] ?? [];
+        final List<dynamic> rechazadas = resultado['rechazadas'] ?? [];
+
+        final StringBuffer mensajeBuffer = StringBuffer("Se cargaron ${creadas.length} ubicaciones correctamente.");
+
+        if (rechazadas.isNotEmpty) {
+          mensajeBuffer.writeln("\n\nNo se cargaron ${rechazadas.length} ubicaciones por estar cerca de una ya registrada:");
+          for (final r in rechazadas) {
+            mensajeBuffer.writeln("• ${r['nombre']} (${r['direccion']})");
+          }
+        }
+        final String mensaje = mensajeBuffer.toString();
         showDialog(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Carga exitosa'),
-                content: SingleChildScrollView(
-                  child: Text(
-                    "Se cargaron ${ubicacionesValidas.length} ubicaciones:\n\n$nombres",
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Resultado de carga CSV'),
+            content: SingleChildScrollView(child: Text(mensaje)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
               ),
+            ],
+          ),
         );
+
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error al cargar CSV: ${e.toString()}")),

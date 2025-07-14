@@ -40,7 +40,15 @@ class UbicacionService {
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Error al crear: ${response.body}');
+      try {
+        final decoded = utf8.decode(response.bodyBytes); 
+        final error = jsonDecode(decoded);
+        throw Exception(error['mensaje'] ?? 'Error desconocido');
+      } on FormatException catch (_) {
+        throw Exception('Ya existe una ubicación ahí mismo o cercana (10m) en ese punto de coordenadas.');
+      } catch (e) {
+        rethrow; // Preserve unexpected exceptions
+      }
     }
   }
 
@@ -79,22 +87,17 @@ class UbicacionService {
     }
   }
 
-  static Future<void> crearUbicacionesLote(List<Ubicacion> lista) async {
-    final body =
-        lista
-            .map(
-              (u) => {
-                'nombre': u.nombre,
-                'direccion': u.direccion,
-                'telefono': u.telefono,
-                'horario': u.horarioAtencion,
-                'sitioWeb': u.sitioWeb,
-                'latitud': u.latitud,
-                'longitud': u.longitud,
-                'establecimiento': u.establecimiento,
-              },
-            )
-            .toList();
+  static Future<Map<String, dynamic>> crearUbicacionesLote(List<Ubicacion> lista) async {
+    final body = lista.map((u) => {
+      'nombre': u.nombre,
+      'direccion': u.direccion,
+      'telefono': u.telefono,
+      'horario': u.horarioAtencion,
+      'sitioWeb': u.sitioWeb,
+      'latitud': u.latitud,
+      'longitud': u.longitud,
+      'establecimiento': u.establecimiento,
+    }).toList();
 
     final response = await http.post(
       Uri.parse('$baseUrl/lote'),
@@ -102,8 +105,11 @@ class UbicacionService {
       body: jsonEncode(body),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Error al cargar ubicaciones en lote');
+    if (response.statusCode == 200) {
+      return jsonDecode(utf8.decode(response.bodyBytes));
+    } else {
+      throw Exception('Error al cargar ubicaciones en lote: ${utf8.decode(response.bodyBytes)}');
     }
   }
+
 }
