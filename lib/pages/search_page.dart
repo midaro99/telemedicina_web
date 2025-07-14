@@ -400,7 +400,6 @@ class _SearchPageState extends State<SearchPage> {
         genotipos: _genotiposSeleccionados,
       );
 
-      /*
       //Obtener el UUID del paciente justo antes de enviar la notificación
       try {
         final publicId = await ApiService().fetchPublicIdFromInternalId(
@@ -410,9 +409,8 @@ class _SearchPageState extends State<SearchPage> {
 
         await ApiService().enviarNotificacionPuntual(
           cuentaUsuarioPublicId: publicId,
-          titulo: '¡Tus resultados ya están listos!**',
-          mensaje:
-              'Si tu ficha socioeconómica ya está ingresada, puedes ver el resultado ahora.',
+          titulo: '¡Tu resultado está disponible!',
+          mensaje:'Ya puedes consultar el resultado de tu examen desde la aplicación. Haz clic aquí para revisarlo.',
           tipoAccion: 'VER_RESULTADOS',
           accionUrl: 'https://miapp.com/video-tutorial',
         );
@@ -424,7 +422,7 @@ class _SearchPageState extends State<SearchPage> {
           'Resultado subido, pero la notificación falló.\nDetalles: $notiError',
         );
       }
-      */
+    
       _showDialog('Éxito', 'Resultado subido correctamente');
       setState(() {
         _pdfGeneradoBytes = null;

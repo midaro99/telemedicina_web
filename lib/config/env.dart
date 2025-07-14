@@ -1,5 +1,5 @@
 class AppConfig {
-  static const bool isDevelopment = true; // CAMBIA A FALSE si es producción
+  static const bool isDevelopment = false; // CAMBIA A FALSE si es producción
 
   static String get baseUrl {
     if (isDevelopment) {
