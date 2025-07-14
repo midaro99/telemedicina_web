@@ -413,14 +413,15 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
         final List<dynamic> creadas = resultado['creadas'] ?? [];
         final List<dynamic> rechazadas = resultado['rechazadas'] ?? [];
 
-        String mensaje = "Se cargaron ${creadas.length} ubicaciones correctamente.";
+        final StringBuffer mensajeBuffer = StringBuffer("Se cargaron ${creadas.length} ubicaciones correctamente.");
 
         if (rechazadas.isNotEmpty) {
-          mensaje += "\n\nNo se cargaron ${rechazadas.length} ubicaciones por estar cerca de una ya registrada:\n";
+          mensajeBuffer.writeln("\n\nNo se cargaron ${rechazadas.length} ubicaciones por estar cerca de una ya registrada:");
           for (final r in rechazadas) {
-            mensaje += "• ${r['nombre']} (${r['direccion']})\n";
+            mensajeBuffer.writeln("• ${r['nombre']} (${r['direccion']})");
           }
         }
+        final String mensaje = mensajeBuffer.toString();
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
