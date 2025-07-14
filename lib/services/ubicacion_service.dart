@@ -106,7 +106,7 @@ class UbicacionService {
     if (response.statusCode == 200) {
       return jsonDecode(utf8.decode(response.bodyBytes));
     } else {
-      throw Exception('Error al cargar ubicaciones en lote: ${response.body}');
+      throw Exception('Error al cargar ubicaciones en lote: ${utf8.decode(response.bodyBytes)}');
     }
   }
 
