@@ -423,7 +423,6 @@ class _SearchPageState extends State<SearchPage> {
         );
       }
     
-      _showDialog('Éxito', 'Resultado subido correctamente');
       setState(() {
         _pdfGeneradoBytes = null;
         _pdfUrl = null;
