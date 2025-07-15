@@ -140,9 +140,7 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
                     } catch (e) {
                       Navigator.pop(context, false);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: ${e.toString()}'),
-                        ),
+                        SnackBar(content: Text('Error: ${e.toString()}')),
                       );
                     }
                   }
@@ -407,16 +405,22 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
       }
 
       try {
-        final resultado = await UbicacionService.crearUbicacionesLote(ubicacionesValidas);
+        final resultado = await UbicacionService.crearUbicacionesLote(
+          ubicacionesValidas,
+        );
         await _cargarDatos();
 
         final List<dynamic> creadas = resultado['creadas'] ?? [];
         final List<dynamic> rechazadas = resultado['rechazadas'] ?? [];
 
-        final StringBuffer mensajeBuffer = StringBuffer("Se cargaron ${creadas.length} ubicaciones correctamente.");
+        final StringBuffer mensajeBuffer = StringBuffer(
+          "Se cargaron ${creadas.length} ubicaciones correctamente.",
+        );
 
         if (rechazadas.isNotEmpty) {
-          mensajeBuffer.writeln("\n\nNo se cargaron ${rechazadas.length} ubicaciones por estar cerca de una ya registrada:");
+          mensajeBuffer.writeln(
+            "\n\nNo se cargaron ${rechazadas.length} ubicaciones por estar cerca de una ya registrada:",
+          );
           for (final r in rechazadas) {
             mensajeBuffer.writeln("• ${r['nombre']} (${r['direccion']})");
           }
@@ -424,18 +428,18 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
         final String mensaje = mensajeBuffer.toString();
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Resultado de carga CSV'),
-            content: SingleChildScrollView(child: Text(mensaje)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Resultado de carga CSV'),
+                content: SingleChildScrollView(child: Text(mensaje)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
-
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error al cargar CSV: ${e.toString()}")),
@@ -447,16 +451,36 @@ class _UbicacionesTabState extends State<UbicacionesTab> {
   Widget _buildBotones() {
     return Row(
       children: [
-        ElevatedButton.icon(
+        OutlinedButton.icon(
           onPressed: () => _crearUbicacion(),
           icon: const Icon(Icons.add),
           label: const Text("Agregar nueva"),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.black87,
+            backgroundColor: const Color(0xFFF2F2F2), // Gris claro
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            textStyle: const TextStyle(fontWeight: FontWeight.w500),
+          ),
         ),
         const SizedBox(width: 10),
-        ElevatedButton.icon(
+        OutlinedButton.icon(
           onPressed: () => _subirCSV(),
           icon: const Icon(Icons.upload_file),
           label: const Text("Subir CSV"),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.black87,
+            backgroundColor: const Color(0xFFF2F2F2),
+            side: BorderSide.none,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            textStyle: const TextStyle(fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     );
