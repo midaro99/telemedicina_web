@@ -3,13 +3,22 @@ import 'package:intl/intl.dart';
 import 'package:telemedicina_web/models/estado_dispositivo.dart';
 import 'package:telemedicina_web/services/api_service.dart';
 
+/*
+******************************************************
+Clase con la que se maneja los estados cambiantes de los dispositivos
+*****************************************************
+*/
 class DeviceStatusPage extends StatefulWidget {
   const DeviceStatusPage({Key? key}) : super(key: key);
-
   @override
   State<DeviceStatusPage> createState() => _DeviceStatusPageState();
 }
 
+/*
+******************************************************
+Clase controladora que le dice a la tabla cómo renderizar cada fila
+*****************************************************
+*/
 class DispositivoDataSource extends DataTableSource {
   final List<EstadoDispositivo> dispositivos;
   final Widget Function(String status) buildStatusChip;
@@ -48,11 +57,13 @@ class DispositivoDataSource extends DataTableSource {
 }
 
 class _DeviceStatusPageState extends State<DeviceStatusPage> {
+  //Variables de Estado
   bool _loading = true;
   String? _loadError;
-
   List<EstadoDispositivo> _dispositivos = [];
+  DateTimeRange? _rangoFechas;
   String _filtroStatus = 'todos';
+  // Enums para los posibles estados
   final List<String> _statuses = [
     'todos',
     'generado',
@@ -61,13 +72,11 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
     'resultado listo',
   ];
 
-  DateTimeRange? _rangoFechas;
-
+  //Inicialización: Se llama un avez cuando el componente se monta por primera vez
   @override
   void initState() {
     super.initState();
     _cargarDispositivos();
-    // Simular carga instantánea de datos
   }
 
   // Datos de ejemplo para simular la carga
