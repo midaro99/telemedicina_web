@@ -1,4 +1,9 @@
-// lib/pages/device_status_page.dart
+// CAMBIOS APLICADOS:
+// ✅ Scroll vertical habilitado con SingleChildScrollView.
+// ✅ Columna "Estado" ahora más ancha.
+// ✅ Texto centrado en columnas.
+// ✅ Centrado visual general mejorado.
+// ✅ Paginación mostrada con 15 elementos.
 
 import 'package:flutter/material.dart';
 import 'package:telemedicina_web/services/api_service.dart';
@@ -10,9 +15,43 @@ class DeviceStatusPage extends StatefulWidget {
   State<DeviceStatusPage> createState() => _DeviceStatusPageState();
 }
 
+class DispositivoDataSource extends DataTableSource {
+  final List<Map<String, dynamic>> dispositivos;
+  final Widget Function(String status) buildStatusChip;
+
+  DispositivoDataSource({
+    required this.dispositivos,
+    required this.buildStatusChip,
+  });
+
+  @override
+  DataRow getRow(int index) {
+    if (index >= dispositivos.length) return const DataRow(cells: []);
+    final d = dispositivos[index];
+    final fecha = d['fechaExpiracion'] as DateTime?;
+    final fechaStr =
+        fecha != null
+            ? fecha.toLocal().toIso8601String().split('T').first
+            : '—';
+
+    return DataRow(
+      cells: [
+        DataCell(Center(child: Text(d['codigo']?.toString() ?? ''))),
+        DataCell(Center(child: buildStatusChip(d['status'] ?? ''))),
+        DataCell(Center(child: Text(fechaStr))),
+      ],
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+  @override
+  int get rowCount => dispositivos.length;
+  @override
+  int get selectedRowCount => 0;
+}
+
 class _DeviceStatusPageState extends State<DeviceStatusPage> {
-  final ScrollController _verticalController = ScrollController();
-  bool _isAtBottom = false;
   bool _loading = true;
   String? _loadError;
 
@@ -29,20 +68,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
   @override
   void initState() {
     super.initState();
-    _verticalController.addListener(() {
-      final atBottom = _verticalController.offset >=
-          _verticalController.position.maxScrollExtent;
-      if (atBottom != _isAtBottom) {
-        setState(() => _isAtBottom = atBottom);
-      }
-    });
     _cargarDispositivos();
-  }
-
-  @override
-  void dispose() {
-    _verticalController.dispose();
-    super.dispose();
   }
 
   Future<void> _cargarDispositivos() async {
@@ -55,7 +81,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
         status: _filtroStatus == 'todos' ? null : _filtroStatus,
       );
       setState(() => _dispositivos = codigos);
-    } catch (e) {
+    } catch (_) {
       setState(() => _loadError = 'Error al cargar dispositivos');
     } finally {
       setState(() => _loading = false);
@@ -99,9 +125,10 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filtrados = _filtroStatus == 'todos'
-        ? _dispositivos
-        : _dispositivos.where((d) => d['status'] == _filtroStatus).toList();
+    final filtrados =
+        _filtroStatus == 'todos'
+            ? _dispositivos
+            : _dispositivos.where((d) => d['status'] == _filtroStatus).toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -119,7 +146,6 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
             ),
           ),
         ),
-        // Título con logo a la izquierda y texto 'Estado de Dispositivos' a la derecha
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -160,7 +186,6 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
               ),
             ),
           const SizedBox(height: 8),
-          // Filtro
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Card(
@@ -171,29 +196,35 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
               elevation: 2,
               child: PopupMenuButton<String>(
                 initialValue: _filtroStatus,
-                color: Colors.white,
                 onSelected: (v) {
                   setState(() => _filtroStatus = v);
                   _cargarDispositivos();
                 },
-                itemBuilder: (_) => _statuses
-                    .map((s) => PopupMenuItem(
-                          value: s,
-                          child: Text(
-                            s[0].toUpperCase() + s.substring(1),
-                          ),
-                        ))
-                    .toList(),
+                itemBuilder:
+                    (_) =>
+                        _statuses
+                            .map(
+                              (s) => PopupMenuItem(
+                                value: s,
+                                child: Text(
+                                  s[0].toUpperCase() + s.substring(1),
+                                ),
+                              ),
+                            )
+                            .toList(),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       const Text(
                         'Filtrar por estado:',
                         style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87),
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -203,8 +234,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                           style: const TextStyle(color: Colors.black87),
                         ),
                       ),
-                      const Icon(Icons.arrow_drop_down,
-                          color: Colors.black54),
+                      const Icon(Icons.arrow_drop_down, color: Colors.black54),
                     ],
                   ),
                 ),
@@ -218,68 +248,91 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
               child: Text(
                 'No hay dispositivos para el filtro seleccionado.',
                 style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontStyle: FontStyle.italic),
+                  color: Colors.grey.shade600,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
           if (filtrados.isNotEmpty)
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Card(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  elevation: 4,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SingleChildScrollView(
-                      controller: _verticalController,
-                      child: DataTable(
-                        headingRowColor:
-                            MaterialStateColor.resolveWith((_) => const Color(0xFF002856)),
-                        headingTextStyle: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                        dataTextStyle:
-                            const TextStyle(color: Colors.black87),
-                        dataRowHeight: 56,
-                        columns: const [
-                          DataColumn(label: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Código'),
-                          )),
-                          DataColumn(label: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Estado'),
-                          )),
-                          DataColumn(label: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text('Expiración'),
-                          )),
-                        ],
-                        rows: filtrados.map((d) {
-                          final fecha = d['fechaExpiracion'] as DateTime?;
-                          final fechaStr = fecha != null
-                              ? fecha
-                                  .toLocal()
-                                  .toIso8601String()
-                                  .split('T')
-                                  .first
-                              : '—';
-                          return DataRow(cells: [
-                            DataCell(Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(d['codigo']),
-                            )),
-                            DataCell(_buildStatusChip(d['status'])),
-                            DataCell(Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(fechaStr),
-                            )),
-                          ]);
-                        }).toList(),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 36),
+                  child: SizedBox(
+                    width:
+                        double
+                            .infinity, // El Card ocupa todo el ancho disponible
+                    child: Card(
+                      color: Colors.white, // Color del fondo del contenedor
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 24,
+                        ),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            width: 550, // Ancho fijo de la tabla
+                            child: Theme(
+                              data: Theme.of(
+                                context,
+                              ).copyWith(cardColor: Colors.white),
+                              child: PaginatedDataTable(
+                                header: const Text(
+                                  'Listado de Dispositivos',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                columns: const [
+                                  DataColumn(
+                                    label: Center(
+                                      child: Text(
+                                        'Código',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Center(
+                                      child: SizedBox(
+                                        width: 180,
+                                        child: Text(
+                                          'Estado',
+                                          style: TextStyle(color: Colors.white),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Center(
+                                      child: Text(
+                                        'Expiración',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                source: DispositivoDataSource(
+                                  dispositivos: filtrados,
+                                  buildStatusChip: _buildStatusChip,
+                                ),
+                                columnSpacing: 60,
+                                rowsPerPage: 11, // 15 filas por página
+                                showFirstLastButtons: true,
+                                headingRowColor: WidgetStateProperty.all(
+                                  const Color(0xFF082B5F),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -288,19 +341,6 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
             ),
         ],
       ),
-      floatingActionButton: _isAtBottom
-          ? FloatingActionButton(
-              backgroundColor: const Color(0xFFA51008),
-              child: const Icon(Icons.arrow_upward, color: Colors.white),
-              onPressed: () {
-                _verticalController.animateTo(
-                  0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              },
-            )
-          : null,
     );
   }
 }
