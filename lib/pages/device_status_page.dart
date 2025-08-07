@@ -1,11 +1,6 @@
-// CAMBIOS APLICADOS:
-// ✅ Scroll vertical habilitado con SingleChildScrollView.
-// ✅ Columna "Estado" ahora más ancha.
-// ✅ Texto centrado en columnas.
-// ✅ Centrado visual general mejorado.
-// ✅ Paginación mostrada con 15 elementos.
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:telemedicina_web/models/estado_dispositivo.dart';
 import 'package:telemedicina_web/services/api_service.dart';
 
 class DeviceStatusPage extends StatefulWidget {
@@ -16,7 +11,7 @@ class DeviceStatusPage extends StatefulWidget {
 }
 
 class DispositivoDataSource extends DataTableSource {
-  final List<Map<String, dynamic>> dispositivos;
+  final List<EstadoDispositivo> dispositivos;
   final Widget Function(String status) buildStatusChip;
 
   DispositivoDataSource({
@@ -26,19 +21,20 @@ class DispositivoDataSource extends DataTableSource {
 
   @override
   DataRow getRow(int index) {
-    if (index >= dispositivos.length) return const DataRow(cells: []);
     final d = dispositivos[index];
-    final fecha = d['fechaExpiracion'] as DateTime?;
-    final fechaStr =
-        fecha != null
-            ? fecha.toLocal().toIso8601String().split('T').first
-            : '—';
+    // Formatea cada fecha o muestra '---'
+    String fmt(DateTime? dt) =>
+        dt != null
+            ? dt.toLocal().toIso8601String().replaceFirst('T', ' ')
+            : '---';
 
     return DataRow(
       cells: [
-        DataCell(Center(child: Text(d['codigo']?.toString() ?? ''))),
-        DataCell(Center(child: buildStatusChip(d['status'] ?? ''))),
-        DataCell(Center(child: Text(fechaStr))),
+        DataCell(Text(d.codigo)),
+        DataCell(buildStatusChip(d.estado)),
+        DataCell(Text(fmt(d.fechaRegistro))),
+        DataCell(Text(fmt(d.fechaExamen))),
+        DataCell(Text(fmt(d.fechaResultado))),
       ],
     );
   }
@@ -55,7 +51,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
   bool _loading = true;
   String? _loadError;
 
-  List<Map<String, dynamic>> _dispositivos = [];
+  List<EstadoDispositivo> _dispositivos = [];
   String _filtroStatus = 'todos';
   final List<String> _statuses = [
     'todos',
@@ -65,13 +61,106 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
     'resultado listo',
   ];
 
+  DateTimeRange? _rangoFechas;
+
   @override
   void initState() {
     super.initState();
     _cargarDispositivos();
+    // Simular carga instantánea de datos
   }
 
+  // Datos de ejemplo para simular la carga
+  final List<EstadoDispositivo> _mockData = [
+    EstadoDispositivo(
+      codigo: '010151-A001',
+      estado: 'registrado',
+      fechaRegistro: DateTime.parse('2025-06-19T09:46:55'),
+      fechaExamen: DateTime.parse('2025-06-19T10:13:00'),
+      fechaResultado: DateTime.parse('2025-06-27T11:19:42'),
+    ),
+    EstadoDispositivo(
+      codigo: '010151-A002',
+      estado: 'resultado listo',
+      fechaRegistro: DateTime.parse('2025-06-19T10:12:01'),
+      fechaExamen: DateTime.parse('2025-06-19T10:39:00'),
+      fechaResultado: DateTime.parse('2025-06-27T12:34:35'),
+    ),
+    // Nuevos casos de prueba:
+    EstadoDispositivo(
+      codigo: '010151-A003',
+      estado: 'generado',
+      fechaRegistro: DateTime.parse('2025-06-19T10:45:00'),
+      fechaExamen: null,
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010152-B001',
+      estado: 'generado',
+      fechaRegistro: DateTime.parse('2025-06-20T08:30:15'),
+      fechaExamen: DateTime.parse('2025-06-20T09:00:00'),
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010152-B002',
+      estado: 'registrado',
+      fechaRegistro: DateTime.parse('2025-06-20T09:15:22'),
+      fechaExamen: DateTime.parse('2025-06-20T09:45:00'),
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010153-C001',
+      estado: 'en proceso',
+      fechaRegistro: DateTime.parse('2025-06-21T11:00:00'),
+      fechaExamen: DateTime.parse('2025-06-21T11:30:00'),
+      fechaResultado: DateTime.parse('2025-06-28T10:00:00'),
+    ),
+    EstadoDispositivo(
+      codigo: '010154-D001',
+      estado: 'generado',
+      fechaRegistro: DateTime.parse('2025-06-22T14:00:00'),
+      fechaExamen: null,
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010155-E001',
+      estado: 'en proceso',
+      fechaRegistro: DateTime.parse('2025-06-10T07:20:00'),
+      fechaExamen: DateTime.parse('2025-06-10T07:50:00'),
+      fechaResultado: DateTime.parse('2025-06-18T08:00:00'),
+    ),
+    EstadoDispositivo(
+      codigo: '010156-F001',
+      estado: 'en proceso',
+      fechaRegistro: DateTime.parse('2025-06-23T15:30:00'),
+      fechaExamen: DateTime.parse('2025-06-23T16:00:00'),
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010157-G001',
+      estado: 'registrado',
+      fechaRegistro: DateTime.parse('2025-06-24T09:00:00'),
+      fechaExamen: null,
+      fechaResultado: null,
+    ),
+    EstadoDispositivo(
+      codigo: '010158-H001',
+      estado: 'verificado',
+      fechaRegistro: DateTime.parse('2025-06-25T12:15:00'),
+      fechaExamen: DateTime.parse('2025-06-25T12:45:00'),
+      fechaResultado: DateTime.parse('2025-07-02T13:30:00'),
+    ),
+    EstadoDispositivo(
+      codigo: '010159-I001',
+      estado: 'en revisión',
+      fechaRegistro: DateTime.parse('2025-06-26T08:05:00'),
+      fechaExamen: DateTime.parse('2025-06-26T08:35:00'),
+      fechaResultado: null,
+    ),
+  ];
+
   Future<void> _cargarDispositivos() async {
+    /*    // Descomentar esta sección para cargar datos reales desde la API
     setState(() {
       _loading = true;
       _loadError = null;
@@ -86,6 +175,11 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
     } finally {
       setState(() => _loading = false);
     }
+    */
+    setState(() {
+      _dispositivos = _mockData;
+      _loading = false;
+    });
   }
 
   Widget _buildStatusChip(String status) {
@@ -125,11 +219,24 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filtrados =
+    // 1) Primero filtrar por estado
+    var filtrados =
         _filtroStatus == 'todos'
             ? _dispositivos
-            : _dispositivos.where((d) => d['status'] == _filtroStatus).toList();
+            : _dispositivos.where((d) => d.estado == _filtroStatus).toList();
 
+    // 2) Filtrar por rango de fechas usando _rangoFechas
+    if (_rangoFechas != null) {
+      filtrados =
+          filtrados.where((d) {
+            final dt = d.fechaRegistro;
+            if (dt == null) return false;
+            // extraer solo la fecha
+            final date = DateTime(dt.year, dt.month, dt.day);
+            return !date.isBefore(_rangoFechas!.start) &&
+                !date.isAfter(_rangoFechas!.end);
+          }).toList();
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -186,61 +293,67 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
               ),
             ),
           const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 2,
-              child: PopupMenuButton<String>(
-                initialValue: _filtroStatus,
-                onSelected: (v) {
-                  setState(() => _filtroStatus = v);
-                  _cargarDispositivos();
-                },
-                itemBuilder:
-                    (_) =>
-                        _statuses
-                            .map(
-                              (s) => PopupMenuItem(
-                                value: s,
-                                child: Text(
-                                  s[0].toUpperCase() + s.substring(1),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Filtrar por estado:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+          // ── FILTRO POR ESTADO SOLO SI HAY DATOS ──
+          if (_dispositivos.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 2,
+                child: PopupMenuButton<String>(
+                  initialValue: _filtroStatus,
+                  onSelected: (v) {
+                    setState(() {
+                      _filtroStatus = v;
+                    });
+                    _cargarDispositivos();
+                  },
+                  itemBuilder:
+                      (_) =>
+                          _statuses.map((s) {
+                            return PopupMenuItem(
+                              value: s,
+                              child: Text(s[0].toUpperCase() + s.substring(1)),
+                            );
+                          }).toList(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Filtrar por estado:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _filtroStatus[0].toUpperCase() +
-                              _filtroStatus.substring(1),
-                          style: const TextStyle(color: Colors.black87),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _filtroStatus[0].toUpperCase() +
+                                _filtroStatus.substring(1),
+                            style: const TextStyle(color: Colors.black87),
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, color: Colors.black54),
-                    ],
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.black54,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
+
           const SizedBox(height: 16),
           if (!_loading && filtrados.isEmpty)
             Padding(
@@ -276,7 +389,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                         child: Align(
                           alignment: Alignment.center,
                           child: SizedBox(
-                            width: 550, // Ancho fijo de la tabla
+                            width: 1200, // Ancho fijo de la tabla
                             child: Theme(
                               data: Theme.of(
                                 context,
@@ -313,7 +426,23 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                                   DataColumn(
                                     label: Center(
                                       child: Text(
-                                        'Expiración',
+                                        'Fecha de Registro',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Center(
+                                      child: Text(
+                                        'Fecha de Examen ',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                  DataColumn(
+                                    label: Center(
+                                      child: Text(
+                                        'Fecha del Resultado listo',
                                         style: TextStyle(color: Colors.white),
                                       ),
                                     ),
