@@ -45,11 +45,9 @@ app.*.map.json
 /android/app/release
 
 # Ignorar archivos generados por Flutter en cada plataforma
-linux/flutter/generated_plugin_registrant.*
-linux/flutter/generated_plugins.cmake
-macos/Flutter/GeneratedPluginRegistrant.swift
-windows/flutter/generated_plugin_registrant.*
-windows/flutter/generated_plugins.cmake
+linux/flutter/*
+macos/Flutter/*
+windows/flutter/*
 
 # Ignorar archivos csv
 *.csv
