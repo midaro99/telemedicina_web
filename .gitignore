@@ -51,3 +51,7 @@ windows/flutter/*
 
 # Ignorar archivos csv
 *.csv
+linux/flutter/*.csv
+# Ignorar los registrants y plugins generados por Flutter
+**/generated_plugin_registrant.*
+**/generated_plugins.cmake

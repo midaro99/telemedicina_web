@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:telemedicina_web/models/estado_dispositivo.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -174,7 +175,6 @@ class ApiService {
     }
   }
 
-
   /// Nuevo método para obtener datos del médico por ID
   Future<Map<String, dynamic>> fetchMedicoById(int id) async {
     final resp = await http.get(
@@ -211,6 +211,95 @@ class ApiService {
         'Error al guardar código QR: ${response.statusCode} - $body',
       );
     }
+  }
+
+  Future<List<EstadoDispositivo>> obtenerTodosDispositivos() async {
+    final token = html.window.localStorage['jwt'];
+
+    final uri = Uri.parse('$_baseUrl/estado-dispositivos?page=0&size=250');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        //  'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al cargar dispositivos: ${response.statusCode}');
+    }
+
+    // 1) Decodifica como mapa
+    final Map<String, dynamic> decoded = jsonDecode(response.body);
+
+    // 2) Extrae el array bajo "content"
+    final List<dynamic> items = decoded['content'] as List<dynamic>;
+
+    // 3) Mapea cada elemento a tu modelo
+    return items.map<EstadoDispositivo>((item) {
+      return EstadoDispositivo(
+        codigo: item['codigo'] as String,
+        estado: item['estado'] as String,
+        fechaRegistro:
+            item['fechaRegistro'] != null
+                ? DateTime.parse(item['fechaRegistro'] as String)
+                : null,
+        fechaExamen:
+            item['fechaExamen'] != null
+                ? DateTime.parse(item['fechaExamen'] as String)
+                : null,
+        fechaResultado:
+            item['fechaResultado'] != null
+                ? DateTime.parse(item['fechaResultado'] as String)
+                : null,
+      );
+    }).toList();
+  }
+
+  Future<List<EstadoDispositivo>> obtenerDispositivosPorFecha({
+    required String desde,
+    required String hasta,
+  }) async {
+    final token = html.window.localStorage['jwt'];
+
+    final uri = Uri.parse('$_baseUrl/estado-dispositivos?page=0&size=250');
+
+    final response = await http.get(
+      uri,
+      headers: {
+        //  'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al cargar dispositivos: ${response.statusCode}');
+    }
+
+    // 1) Decodifica como mapa
+    final Map<String, dynamic> decoded = jsonDecode(response.body);
+
+    // 2) Extrae el array bajo "content"
+    final List<dynamic> items = decoded['content'] as List<dynamic>;
+
+    // 3) Mapea cada elemento a tu modelo
+    return items.map<EstadoDispositivo>((item) {
+      return EstadoDispositivo(
+        codigo: item['codigo'] as String,
+        estado: item['estado'] as String,
+        fechaRegistro:
+            item['fechaRegistro'] != null
+                ? DateTime.parse(item['fechaRegistro'] as String)
+                : null,
+        fechaExamen:
+            item['fechaExamen'] != null
+                ? DateTime.parse(item['fechaExamen'] as String)
+                : null,
+        fechaResultado:
+            item['fechaResultado'] != null
+                ? DateTime.parse(item['fechaResultado'] as String)
+                : null,
+      );
+    }).toList();
   }
 
   /// Listar códigos QR con su status derivado
@@ -266,7 +355,9 @@ class ApiService {
 
   /// Consulta sólo el nombre del paciente a partir del código de dispositivo
   Future<String> fetchPatientNameFromExamenVph(String dispositivoCodigo) async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/nombre/$dispositivoCodigo');
+    final uri = Uri.parse(
+      '${AppConfig.baseUrl}/prueba/medico/nombre/$dispositivoCodigo',
+    );
     final resp = await http.get(uri);
     if (resp.statusCode == 200) {
       return resp.body;
@@ -276,7 +367,9 @@ class ApiService {
 
   /// Borra SOLO los campos de contenido, fecha_resultado, nombre, tamano, tipo y diagnostico
   Future<void> clearExamenVphFields(String codigo) async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/prueba/medico/clear-fields/$codigo');
+    final uri = Uri.parse(
+      '${AppConfig.baseUrl}/prueba/medico/clear-fields/$codigo',
+    );
     final token = html.window.localStorage['jwt'];
     final headers = <String, String>{
       'Content-Type': 'application/json',

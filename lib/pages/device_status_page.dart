@@ -32,10 +32,10 @@ class DispositivoDataSource extends DataTableSource {
   DataRow getRow(int index) {
     final d = dispositivos[index];
     // Formatea cada fecha o muestra '---'
+    final dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+
     String fmt(DateTime? dt) =>
-        dt != null
-            ? dt.toLocal().toIso8601String().replaceFirst('T', ' ')
-            : '---';
+        dt != null ? dateFormat.format(dt.toLocal()) : '---';
 
     return DataRow(
       cells: [
@@ -76,122 +76,68 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
   @override
   void initState() {
     super.initState();
-    _cargarDispositivos();
+    //_cargarDispositivos();
+    _loadError = null;
   }
 
-  // Datos de ejemplo para simular la carga
-  final List<EstadoDispositivo> _mockData = [
-    EstadoDispositivo(
-      codigo: '010151-A001',
-      estado: 'registrado',
-      fechaRegistro: DateTime.parse('2025-06-19T09:46:55'),
-      fechaExamen: DateTime.parse('2025-06-19T10:13:00'),
-      fechaResultado: DateTime.parse('2025-06-27T11:19:42'),
-    ),
-    EstadoDispositivo(
-      codigo: '010151-A002',
-      estado: 'resultado listo',
-      fechaRegistro: DateTime.parse('2025-06-19T10:12:01'),
-      fechaExamen: DateTime.parse('2025-06-19T10:39:00'),
-      fechaResultado: DateTime.parse('2025-06-27T12:34:35'),
-    ),
-    // Nuevos casos de prueba:
-    EstadoDispositivo(
-      codigo: '010151-A003',
-      estado: 'generado',
-      fechaRegistro: DateTime.parse('2025-06-19T10:45:00'),
-      fechaExamen: null,
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010152-B001',
-      estado: 'generado',
-      fechaRegistro: DateTime.parse('2025-06-20T08:30:15'),
-      fechaExamen: DateTime.parse('2025-06-20T09:00:00'),
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010152-B002',
-      estado: 'registrado',
-      fechaRegistro: DateTime.parse('2025-06-20T09:15:22'),
-      fechaExamen: DateTime.parse('2025-06-20T09:45:00'),
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010153-C001',
-      estado: 'en proceso',
-      fechaRegistro: DateTime.parse('2025-06-21T11:00:00'),
-      fechaExamen: DateTime.parse('2025-06-21T11:30:00'),
-      fechaResultado: DateTime.parse('2025-06-28T10:00:00'),
-    ),
-    EstadoDispositivo(
-      codigo: '010154-D001',
-      estado: 'generado',
-      fechaRegistro: DateTime.parse('2025-06-22T14:00:00'),
-      fechaExamen: null,
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010155-E001',
-      estado: 'en proceso',
-      fechaRegistro: DateTime.parse('2025-06-10T07:20:00'),
-      fechaExamen: DateTime.parse('2025-06-10T07:50:00'),
-      fechaResultado: DateTime.parse('2025-06-18T08:00:00'),
-    ),
-    EstadoDispositivo(
-      codigo: '010156-F001',
-      estado: 'en proceso',
-      fechaRegistro: DateTime.parse('2025-06-23T15:30:00'),
-      fechaExamen: DateTime.parse('2025-06-23T16:00:00'),
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010157-G001',
-      estado: 'registrado',
-      fechaRegistro: DateTime.parse('2025-06-24T09:00:00'),
-      fechaExamen: null,
-      fechaResultado: null,
-    ),
-    EstadoDispositivo(
-      codigo: '010158-H001',
-      estado: 'verificado',
-      fechaRegistro: DateTime.parse('2025-06-25T12:15:00'),
-      fechaExamen: DateTime.parse('2025-06-25T12:45:00'),
-      fechaResultado: DateTime.parse('2025-07-02T13:30:00'),
-    ),
-    EstadoDispositivo(
-      codigo: '010159-I001',
-      estado: 'en revisión',
-      fechaRegistro: DateTime.parse('2025-06-26T08:05:00'),
-      fechaExamen: DateTime.parse('2025-06-26T08:35:00'),
-      fechaResultado: null,
-    ),
-  ];
-
   Future<void> _cargarDispositivos() async {
-    /*    // Descomentar esta sección para cargar datos reales desde la API
     setState(() {
       _loading = true;
       _loadError = null;
     });
+
     try {
-      final codigos = await ApiService().obtenerCodigosQR(
-        status: _filtroStatus == 'todos' ? null : _filtroStatus,
-      );
-      setState(() => _dispositivos = codigos);
-    } catch (_) {
-      setState(() => _loadError = 'Error al cargar dispositivos');
+      final dispositivos =
+          await ApiService()
+              .obtenerTodosDispositivos(); // Usaremos el endpoint real
+      //Mandamos a mostrar a través del debugger
+      debugPrint('Dispositivos cargados: ${dispositivos.length}');
+      setState(() {
+        _dispositivos = dispositivos;
+      });
+    } catch (e) {
+      setState(() => _loadError = 'Error al cargar dispositivos: $e');
     } finally {
       setState(() => _loading = false);
     }
-    */
+  }
+
+  Future<void> _cargarDispositivosPorFechas(
+    DateTime desde,
+    DateTime hasta,
+  ) async {
     setState(() {
-      _dispositivos = _mockData;
-      _loading = false;
+      _loading = true;
+      _loadError = null;
     });
+
+    final formato = DateFormat('yyyy-MM-dd');
+
+    try {
+      final dispositivos = await ApiService().obtenerDispositivosPorFecha(
+        desde: formato.format(desde),
+        hasta: formato.format(hasta),
+      );
+
+      setState(() {
+        _dispositivos = dispositivos;
+      });
+    } catch (e) {
+      setState(() => _loadError = 'Error al filtrar por fechas');
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _descargarReporte() {
+    // Por ahora solo muestra un mensaje
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Funcionalidad de descarga en desarrollo')),
+    );
   }
 
   Widget _buildStatusChip(String status) {
+    status = status.toLowerCase();
     Color color;
     IconData icon;
     switch (status) {
@@ -223,6 +169,65 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
       ),
       backgroundColor: color,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+  }
+
+  Widget _buildOpcionesIniciales() {
+    setState(() {
+      _loading = true;
+      _loadError = null;
+    });
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      child: Wrap(
+        spacing: 18,
+        runSpacing: 28,
+        children: [
+          ElevatedButton.icon(
+            onPressed: _cargarDispositivos,
+            icon: const Icon(Icons.list),
+            label: const Text('Mostrar todos los dispositivos'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF002856),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final rango = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime(2024, 1, 1),
+                lastDate: DateTime.now(),
+              );
+
+              if (rango != null) {
+                await _cargarDispositivosPorFechas(rango.start, rango.end);
+                setState(() {
+                  _rangoFechas = rango;
+                });
+              }
+            },
+            icon: const Icon(Icons.calendar_month),
+            label: const Text('Buscar por fechas'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF002856),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: _descargarReporte,
+            icon: const Icon(Icons.download),
+            label: const Text('Descargar Reporte'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -302,10 +307,13 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
               ),
             ),
           const SizedBox(height: 8),
+          // LO QUE SIEMPRE SE MUESTRA
+          _buildOpcionesIniciales(),
+          const SizedBox(height: 16),
           // ── FILTRO POR ESTADO SOLO SI HAY DATOS ──
           if (_dispositivos.isNotEmpty) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Card(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
@@ -331,7 +339,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 12,
+                      vertical: 4,
                     ),
                     child: Row(
                       children: [
@@ -342,7 +350,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 18, height: 12),
                         Expanded(
                           child: Text(
                             _filtroStatus[0].toUpperCase() +
@@ -362,11 +370,10 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
             ),
             const SizedBox(height: 16),
           ],
-
           const SizedBox(height: 16),
           if (!_loading && filtrados.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(10.0),
               child: Text(
                 'No hay dispositivos para el filtro seleccionado.',
                 style: TextStyle(
@@ -379,7 +386,10 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 36),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 36,
+                    vertical: 0,
+                  ),
                   child: SizedBox(
                     width:
                         double
@@ -423,7 +433,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                                   DataColumn(
                                     label: Center(
                                       child: SizedBox(
-                                        width: 180,
+                                        width: 50,
                                         child: Text(
                                           'Estado',
                                           style: TextStyle(color: Colors.white),
@@ -461,7 +471,7 @@ class _DeviceStatusPageState extends State<DeviceStatusPage> {
                                   dispositivos: filtrados,
                                   buildStatusChip: _buildStatusChip,
                                 ),
-                                columnSpacing: 60,
+                                columnSpacing: 30,
                                 rowsPerPage: 11, // 15 filas por página
                                 showFirstLastButtons: true,
                                 headingRowColor: WidgetStateProperty.all(
